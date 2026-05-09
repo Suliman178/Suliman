@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../lib/apiClient';
+import { ApiError, api } from '../lib/apiClient';
 
 let pendingProjectCreation: Promise<string> | undefined;
 
@@ -27,7 +27,12 @@ export function NewBuilderPage() {
         if (active) navigate(`/builder/${projectId}`, { replace: true });
       })
       .catch((err) => {
-        if (active) setError(err instanceof Error ? err.message : 'Could not create project.');
+        if (!active) return;
+        if (err instanceof ApiError && err.status === 401) {
+          navigate('/login', { replace: true });
+          return;
+        }
+        setError(err instanceof Error ? err.message : 'Could not create project.');
       });
     return () => { active = false; };
   }, [navigate]);

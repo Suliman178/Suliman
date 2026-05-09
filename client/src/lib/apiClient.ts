@@ -6,6 +6,13 @@ const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
 type RequestBody = unknown;
 
+export class ApiError extends Error {
+  constructor(message: string, public status: number) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
 async function parseResponse(response: Response) {
   const contentType = response.headers.get('content-type') || '';
   if (!contentType.includes('application/json')) return undefined;
@@ -24,7 +31,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   const data = await parseResponse(response);
   if (!response.ok) {
     const message = data && typeof data === 'object' && 'error' in data ? String((data as { error: unknown }).error) : `Request failed with ${response.status}`;
-    throw new Error(message);
+    throw new ApiError(message, response.status);
   }
   return data as T;
 }
