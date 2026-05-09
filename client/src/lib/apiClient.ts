@@ -1,4 +1,4 @@
-import type { AgentRole } from '../types/ai';
+import type { AgentRole, ProjectType } from '../types/ai';
 import type { ChatMessage, Project, ProjectFile } from '../types/project';
 import type { User } from '../types/user';
 
@@ -65,5 +65,5 @@ export const api = {
   saveFile: (projectId: string, file: Pick<ProjectFile, 'path' | 'language' | 'content'>) => patch<{ file: ProjectFile }>(`/api/projects/${projectId}/files`, file),
   createFile: (projectId: string, file: Pick<ProjectFile, 'path' | 'language' | 'content'>) => post<{ file: ProjectFile }>(`/api/projects/${projectId}/files`, file),
   deleteFile: (projectId: string, path: string) => del<{ ok: boolean }>(`/api/projects/${projectId}/files`, { path }),
-  ai: (route: string, payload: { projectId?: string; instruction: string; model: string; agentRole: AgentRole }) => post<{ project: Project; files: ProjectFile[]; message: string; missingApiKey?: boolean }>(`/api/ai/${route}`, payload)
+  ai: (route: string, payload: { projectId?: string; instruction: string; model: string; agentRole: AgentRole; projectType: ProjectType }) => post<{ project: Project; files: ProjectFile[]; message: string; projectType: ProjectType; missingApiKey?: boolean }>(`/api/ai/${route}`, payload)
 };

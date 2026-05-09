@@ -1,6 +1,6 @@
 # AI App Builder
 
-A full-stack MVP for building and editing small AI-generated web apps. It includes email/password authentication, project persistence, a file explorer, Monaco code editor, live iframe preview, chat-driven AI generation, usage tracking, and an extensible AI provider/router architecture.
+A full-stack MVP for building and editing AI-generated app projects. It includes email/password authentication, project persistence, a file explorer, Monaco code editor, chat-driven AI generation, static iframe preview, usage tracking, and an extensible AI provider/router architecture.
 
 ## Stack
 
@@ -11,6 +11,16 @@ A full-stack MVP for building and editing small AI-generated web apps. It includ
 - Database schema: Drizzle ORM schema for PostgreSQL tables
 - Auth: secure email/password auth with bcrypt hashes and `express-session` HTTP-only session cookies
 - AI: OpenAI provider using `OPENAI_API_KEY`; Anthropic and Gemini provider shells are ready for future implementation
+- Project types: static HTML/CSS/JS, React app files, and full-stack React + Express files
+
+
+## Generation and preview support
+
+- Static projects generate `index.html`, `style.css`, and `script.js` and currently run in the live iframe preview.
+- React projects generate real multi-file Vite/React TypeScript project files such as `package.json`, `src/App.tsx`, `src/main.tsx`, components, pages, and styles.
+- Full-stack projects generate frontend React files, backend Express TypeScript routes/services, shared types, and database-ready schema files.
+- React and full-stack generation currently works as saved project files in the file explorer/editor, but the live runner for those project types is intentionally not implemented yet. The preview shows: `React/full-stack preview runner is not implemented yet.` A real sandbox runner is the next phase.
+- If `OPENAI_API_KEY` is missing, the local fallback intentionally remains a simple static HTML/CSS/JS project.
 
 ## Environment secrets
 

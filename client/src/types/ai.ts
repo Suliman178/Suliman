@@ -1,1 +1,1 @@
-export type { AgentRole, GeneratedProjectJson } from '../../../shared/types';
+export type { AgentRole, GeneratedProjectJson, ProjectType } from '../../../shared/types';

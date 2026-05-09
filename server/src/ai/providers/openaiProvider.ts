@@ -14,12 +14,13 @@ export class OpenAIProvider implements AiProvider {
       model: request.model || 'gpt-4o-mini',
       response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: `${systemPrompt}\nRequired JSON keys: projectName, description, summary, files. Files must contain path, language, content.` },
-        { role: 'user', content: `Project: ${request.projectName ?? 'New project'}\nInstruction: ${request.instruction}${context}` }
+        { role: 'system', content: `${systemPrompt}\nRequired JSON keys: projectName, description, summary, projectType, files. projectType must be static, react, or fullstack. Files must contain path, language, content. Return JSON only.` },
+        { role: 'user', content: `Project: ${request.projectName ?? 'New project'}\nTarget projectType: ${request.projectType}\nInstruction: ${request.instruction}${context}` }
       ]
     });
     const raw = completion.choices[0]?.message?.content ?? '';
     const project = validateGeneratedProject(safeJsonParse(raw));
+    if (project.projectType !== request.projectType) throw new Error(`AI returned projectType ${project.projectType}, expected ${request.projectType}.`);
     return { project, message: project.summary, provider: this.name, model: request.model, inputTokens: completion.usage?.prompt_tokens ?? 0, outputTokens: completion.usage?.completion_tokens ?? 0 };
   }
 }
