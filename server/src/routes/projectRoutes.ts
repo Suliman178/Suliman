@@ -1,0 +1,13 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { requireAuth } from '../middleware/authMiddleware.js';
+import { validateBody } from '../middleware/validateBody.js';
+import { appStore } from '../services/appStore.js';
+import { assertProjectOwner } from '../services/projectService.js';
+const router = Router(); router.use(requireAuth);
+router.post('/', validateBody(z.object({ name: z.string().min(1), description: z.string().default('') })), async (req, res, next) => { try { res.json({ project: await appStore.createProject(req.user!.id, req.body.name, req.body.description) }); } catch (e) { next(e); } });
+router.get('/', async (req, res, next) => { try { res.json({ projects: await appStore.listProjects(req.user!.id) }); } catch (e) { next(e); } });
+router.get('/:projectId', async (req, res, next) => { try { const project = await assertProjectOwner(req.params.projectId, req.user!.id); res.json({ project, files: await appStore.projectFiles(project.id), messages: await appStore.messages(project.id) }); } catch (e) { next(e); } });
+router.patch('/:projectId', validateBody(z.object({ name: z.string().min(1).optional(), description: z.string().optional() })), async (req, res, next) => { try { await assertProjectOwner(req.params.projectId, req.user!.id); res.json({ project: await appStore.updateProject(req.params.projectId, req.body) }); } catch (e) { next(e); } });
+router.delete('/:projectId', async (req, res, next) => { try { await assertProjectOwner(req.params.projectId, req.user!.id); await appStore.deleteProject(req.params.projectId); res.json({ ok: true }); } catch (e) { next(e); } });
+export default router;

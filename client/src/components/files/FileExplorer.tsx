@@ -1,0 +1,6 @@
+import type { ProjectFile } from '../../types/project';
+import { iconFor } from '../../lib/fileLanguage';
+import { Button, GhostButton } from '../ui/Button';
+export function FileExplorer({ files, selectedPath, onSelect, onCreate, onDelete }: { files: ProjectFile[]; selectedPath?: string; onSelect: (path:string)=>void; onCreate:()=>void; onDelete:()=>void }) {
+  return <div className="h-full border-r border-gray-200 bg-white"><div className="flex items-center justify-between border-b border-gray-200 p-3"><h3 className="font-semibold">Files</h3><div className="flex gap-1"><Button className="px-2 py-1" onClick={onCreate}>+</Button><GhostButton className="px-2 py-1" onClick={onDelete} disabled={!selectedPath}>Del</GhostButton></div></div><div className="space-y-1 overflow-auto p-2">{files.length===0 && <p className="p-3 text-sm text-gray-500">No files yet. Ask AI to generate an app or create a file.</p>}{files.map((f)=><button key={f.id} onClick={()=>onSelect(f.path)} className={`w-full truncate rounded-lg px-3 py-2 text-left text-sm ${selectedPath===f.path?'bg-accent-50 font-semibold text-accent-700':'hover:bg-gray-50'}`} title={f.path}><span className="mr-2">{iconFor(f.path)}</span>{f.path}</button>)}</div></div>;
+}

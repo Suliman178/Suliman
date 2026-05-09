@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { validateBody } from '../middleware/validateBody.js';
+import { loginUser, publicUser, registerUser } from '../services/authService.js';
+import { appStore } from '../services/appStore.js';
+const router = Router();
+const credentials = z.object({ email: z.string().email(), password: z.string().min(6), name: z.string().optional() });
+router.post('/register', validateBody(credentials), async (req, res, next) => { try { const user = await registerUser(req.body.email, req.body.password, req.body.name); req.session.userId = user.id; res.json({ user: publicUser(user) }); } catch (e) { next(e); } });
+router.post('/login', validateBody(credentials.omit({ name: true })), async (req, res, next) => { try { const user = await loginUser(req.body.email, req.body.password); req.session.userId = user.id; res.json({ user: publicUser(user) }); } catch (e) { next(e); } });
+router.post('/logout', (req, res) => req.session.destroy(() => res.json({ ok: true })));
+router.get('/me', async (req, res, next) => { try { const user = req.session.userId ? await appStore.findUserById(req.session.userId) : null; res.json({ user: user ? publicUser(user) : null }); } catch (e) { next(e); } });
+export default router;

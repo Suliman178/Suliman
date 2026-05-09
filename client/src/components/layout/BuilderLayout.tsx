@@ -1,0 +1,2 @@
+import type { ReactNode } from 'react';
+export function BuilderLayout({ chat, files, editor, preview }: { chat: ReactNode; files: ReactNode; editor: ReactNode; preview: ReactNode }) { return <main className="grid h-[calc(100vh-3.5rem)] grid-cols-1 overflow-hidden lg:grid-cols-[320px_minmax(420px,1fr)_38%]"><div className="min-h-0">{chat}</div><div className="grid min-h-0 grid-cols-[210px_minmax(0,1fr)]">{files}{editor}</div><div className="min-h-0 border-l border-gray-200">{preview}</div></main>; }

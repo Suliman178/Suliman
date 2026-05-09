@@ -1,0 +1,4 @@
+import { useEffect, useState } from 'react';
+import { api } from '../lib/apiClient';
+import type { Project, ProjectFile, ChatMessage } from '../types/project';
+export function useProject(projectId?: string) { const [project, setProject] = useState<Project | null>(null); const [files, setFiles] = useState<ProjectFile[]>([]); const [messages, setMessages] = useState<ChatMessage[]>([]); const [loading, setLoading] = useState(false); useEffect(()=>{ if(!projectId || projectId==='new') return; setLoading(true); api<{project:Project;files:ProjectFile[];messages:ChatMessage[]}>(`/api/projects/${projectId}`).then((d)=>{setProject(d.project);setFiles(d.files);setMessages(d.messages||[]);}).finally(()=>setLoading(false)); }, [projectId]); return { project, setProject, files, setFiles, messages, setMessages, loading }; }

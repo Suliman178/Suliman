@@ -1,0 +1,2 @@
+import type { ChatMessage } from '../../types/project';
+export function MessageBubble({ message }: { message: ChatMessage }) { const user = message.role === 'user'; return <div className={`rounded-xl p-3 text-sm ${user ? 'bg-accent-600 text-white' : 'border border-gray-200 bg-white text-gray-800'}`}><div className="mb-1 text-xs opacity-70">{user ? 'You' : `AI${message.agentRole ? ` · ${message.agentRole}` : ''}`}</div><div className="whitespace-pre-wrap">{message.content}</div></div>; }

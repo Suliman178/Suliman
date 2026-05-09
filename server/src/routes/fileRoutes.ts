@@ -1,0 +1,14 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { requireAuth } from '../middleware/authMiddleware.js';
+import { validateBody } from '../middleware/validateBody.js';
+import { appStore } from '../services/appStore.js';
+import { assertProjectOwner } from '../services/projectService.js';
+import { languageFromPath, sanitizePath } from '../utils/filePathValidator.js';
+const router = Router({ mergeParams: true }); router.use(requireAuth);
+const fileBody = z.object({ path: z.string().min(1), language: z.string().optional(), content: z.string().default('') });
+router.get('/', async (req, res, next) => { try { const project = await assertProjectOwner(req.params.projectId, req.user!.id); res.json({ files: await appStore.projectFiles(project.id) }); } catch (e) { next(e); } });
+router.post('/', validateBody(fileBody), async (req, res, next) => { try { const project = await assertProjectOwner(req.params.projectId, req.user!.id); const path = sanitizePath(req.body.path); res.json({ file: await appStore.upsertFile(project.id, path, req.body.language || languageFromPath(path), req.body.content) }); } catch (e) { next(e); } });
+router.patch('/', validateBody(fileBody), async (req, res, next) => { try { const project = await assertProjectOwner(req.params.projectId, req.user!.id); const path = sanitizePath(req.body.path); res.json({ file: await appStore.upsertFile(project.id, path, req.body.language || languageFromPath(path), req.body.content) }); } catch (e) { next(e); } });
+router.delete('/', validateBody(z.object({ path: z.string().min(1) })), async (req, res, next) => { try { const project = await assertProjectOwner(req.params.projectId, req.user!.id); await appStore.deleteFile(project.id, sanitizePath(req.body.path)); res.json({ ok: true, files: await appStore.projectFiles(project.id) }); } catch (e) { next(e); } });
+export default router;
