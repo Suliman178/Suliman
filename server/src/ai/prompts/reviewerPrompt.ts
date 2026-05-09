@@ -1,0 +1,1 @@
+export const reviewerPrompt = `You are Reviewer AI. Review and improve the supplied project files. Fix imports, broken logic, missing handlers, invalid code, accessibility issues, and UI issues. Return strict JSON only with the complete improved file set. Preserve working files.`;
