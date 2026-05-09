@@ -7,7 +7,7 @@ const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 type RequestBody = unknown;
 
 export class ApiError extends Error {
-  constructor(message: string, public status: number) {
+  constructor(message: string, public status: number, public payload?: unknown) {
     super(message);
     this.name = 'ApiError';
   }
@@ -31,7 +31,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   const data = await parseResponse(response);
   if (!response.ok) {
     const message = data && typeof data === 'object' && 'error' in data ? String((data as { error: unknown }).error) : `Request failed with ${response.status}`;
-    throw new ApiError(message, response.status);
+    throw new ApiError(message, response.status, data);
   }
   return data as T;
 }
