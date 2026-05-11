@@ -3,6 +3,27 @@ import type { AiProvider, AiRequest, AiResponse } from '../types.js';
 import { safeJsonParse } from '../../utils/safeJsonParse.js';
 import { validateGeneratedProject } from '../validators/projectJsonValidator.js';
 
+export const invalidOpenAiKeyMessage = 'Your OpenAI API key is invalid or expired. Create a new key from the OpenAI Platform API keys page and update .env.';
+
+class OpenAiProviderError extends Error {
+  constructor(message: string, public statusCode: number) {
+    super(message);
+    this.name = 'OpenAiProviderError';
+  }
+}
+
+function getErrorStatus(error: unknown) {
+  if (!error || typeof error !== 'object') return undefined;
+  const status = (error as { status?: unknown }).status;
+  return typeof status === 'number' ? status : undefined;
+}
+
+export function isInvalidOpenAiKeyError(error: unknown) {
+  if (getErrorStatus(error) === 401) return true;
+  const message = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+  return /incorrect api key|invalid api key|api key.*expired/i.test(message);
+}
+
 export class OpenAIProvider implements AiProvider {
   name = 'openai' as const;
   isConfigured() { return Boolean(process.env.OPENAI_API_KEY); }
@@ -17,6 +38,9 @@ export class OpenAIProvider implements AiProvider {
         { role: 'system', content: `${systemPrompt}\nRequired JSON keys: projectName, description, summary, projectType, files. projectType must be static, react, or fullstack. Files must contain path, language, content. Return JSON only.` },
         { role: 'user', content: `Project: ${request.projectName ?? 'New project'}\nTarget projectType: ${request.projectType}\nInstruction: ${request.instruction}${context}` }
       ]
+    }).catch((error: unknown) => {
+      if (isInvalidOpenAiKeyError(error)) throw new OpenAiProviderError(invalidOpenAiKeyMessage, 401);
+      throw error;
     });
     const raw = completion.choices[0]?.message?.content ?? '';
     const project = validateGeneratedProject(safeJsonParse(raw));
