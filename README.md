@@ -27,12 +27,22 @@ A full-stack MVP for building and editing AI-generated app projects. It includes
 Create a `.env` file or Replit Secrets with:
 
 ```bash
-OPENAI_API_KEY=your_openai_key       # optional; without it a local fallback project is generated
+OPENAI_API_KEY=your_openai_key       # required for real AI generation
 DATABASE_URL=postgres://...          # optional; enables PostgreSQL persistence
 SESSION_SECRET=replace-with-long-secret
 CLIENT_ORIGIN=http://localhost:5173  # dev default
 PORT=3000                            # API default
 ```
+
+## OpenAI API key setup
+
+ChatGPT Plus or ChatGPT Pro is not the same thing as OpenAI API credit. A ChatGPT subscription lets you use ChatGPT in the ChatGPT product, but this app calls the OpenAI Platform API directly.
+
+For real AI generation, create a real OpenAI Platform API key from the OpenAI Platform API keys page, add billing/API credit if needed, and put the key in `.env` as `OPENAI_API_KEY=...`.
+
+Do not commit `.env`. This repo ignores `.env` and `.env.*` by default, and secrets should stay local or in your deployment secret manager.
+
+After changing `.env`, restart the server with `npm run dev` so `dotenv` can load the updated value.
 
 Optional future provider keys:
 
