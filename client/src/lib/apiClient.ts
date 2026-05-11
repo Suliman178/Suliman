@@ -57,6 +57,7 @@ export const api = {
   login: (payload: { email: string; password: string }) => post<{ user: User }>('/api/auth/login', payload),
   logout: () => post<{ ok: boolean }>('/api/auth/logout'),
   me: () => get<{ user?: User }>('/api/auth/me'),
+  health: () => get<{ ok: boolean; database: string; openai: boolean }>('/api/health'),
   listProjects: () => get<{ projects: Project[] }>('/api/projects'),
   createProject: (payload: { name: string; description?: string }) => post<{ project: Project }>('/api/projects', payload),
   getProject: (id: string) => get<{ project: Project; files: ProjectFile[]; chatMessages: ChatMessage[] }>(`/api/projects/${id}`),
