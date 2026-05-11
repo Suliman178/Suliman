@@ -1,6 +1,7 @@
+export const PROJECT_TYPES = ['static', 'react', 'fullstack'] as const;
+export type ProjectType = (typeof PROJECT_TYPES)[number];
 export type AgentRole = 'auto' | 'planner' | 'coder' | 'reviewer' | 'fixer' | 'uiux';
 export type ChatRole = 'user' | 'assistant' | 'system';
-export type ProjectType = 'static' | 'react' | 'fullstack';
 
 export interface User { id: string; email: string; name: string; createdAt: string; updatedAt: string; }
 export interface Project { id: string; userId: string; name: string; description: string; createdAt: string; updatedAt: string; }
