@@ -3,6 +3,12 @@ import type { AiProvider, AiRequest, AiResponse } from '../types.js';
 import { safeJsonParse } from '../../utils/safeJsonParse.js';
 import { validateGeneratedProject } from '../validators/projectJsonValidator.js';
 
+const architecturePrompts = {
+  static: 'Technical architecture: Static HTML/CSS/JS. Generate browser-native files such as index.html, style.css, and script.js. Do not use React or server code unless the user explicitly changes the project type.',
+  react: 'Technical architecture: React App. Generate a client-side React application with appropriate component structure and frontend assets. Do not include backend/server code unless the user explicitly changes the project type.',
+  fullstack: 'Technical architecture: Full-stack App. Generate both frontend and backend/API code where the request benefits from persistence, auth, or server-side behavior.'
+} as const;
+
 export const invalidOpenAiKeyMessage = 'Your OpenAI API key is invalid or expired. Create a new key from the OpenAI Platform API keys page and update .env.';
 
 class OpenAiProviderError extends Error {
@@ -35,8 +41,8 @@ export class OpenAIProvider implements AiProvider {
       model: request.model || 'gpt-4o-mini',
       response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: `${systemPrompt}\nRequired JSON keys: projectName, description, summary, projectType, files. projectType must be static, react, or fullstack. Files must contain path, language, content. Return JSON only.` },
-        { role: 'user', content: `Project: ${request.projectName ?? 'New project'}\nTarget projectType: ${request.projectType}\nInstruction: ${request.instruction}${context}` }
+        { role: 'system', content: `${systemPrompt}\nProject type means technical architecture only, never business category. ${architecturePrompts[request.projectType]}\nRequired JSON keys: projectName, description, summary, projectType, files. projectType must exactly be ${request.projectType}. Files must contain path, language, content. Return JSON only.` },
+        { role: 'user', content: `Project: ${request.projectName ?? 'New project'}\nTechnical architecture: ${request.projectType}\nInstruction: ${request.instruction}${context}` }
       ]
     }).catch((error: unknown) => {
       if (isInvalidOpenAiKeyError(error)) throw new OpenAiProviderError(invalidOpenAiKeyMessage, 401);
