@@ -4,17 +4,17 @@ import { requireAuth } from '../middleware/authMiddleware.js';
 import { validateBody } from '../middleware/validateBody.js';
 import { aiRouter } from '../ai/aiRouter.js';
 import { store } from '../services/storage.js';
+import { PROJECT_TYPES } from '../../../shared/types.js';
 import type { AgentRole } from '../../../shared/types.js';
 
 export const aiRoutes = Router();
 aiRoutes.use(requireAuth);
-const projectTypeSchema = z.enum(['static', 'react', 'fullstack']);
 const aiSchema = z.object({
   projectId: z.string().optional(),
   instruction: z.string().min(1).max(4000),
   model: z.string().default('gpt-4o-mini'),
   agentRole: z.enum(['auto','planner','coder','reviewer','fixer','uiux']).default('auto'),
-  projectType: projectTypeSchema.default('static')
+  projectType: z.enum(PROJECT_TYPES).default('static')
 });
 
 async function handle(req: any, res: any, mode: AgentRole) {
@@ -32,7 +32,8 @@ async function handle(req: any, res: any, mode: AgentRole) {
   }
   await store.addChatMessage(project.id, 'assistant', result.message, mode, result.model);
   await store.addUsage({ userId: req.user.id, projectId: project.id, provider: result.provider, model: result.model, agentRole: mode, inputTokens: result.inputTokens, outputTokens: result.outputTokens, estimatedCost: 0 });
-  res.json({ project, files: savedFiles, message: result.message, provider: result.provider, model: result.model, projectType: result.project?.projectType ?? body.projectType, missingApiKey: !process.env.OPENAI_API_KEY });
+  const openAiKey = process.env.OPENAI_API_KEY?.trim();
+  res.json({ project, files: savedFiles, message: result.message, provider: result.provider, model: result.model, projectType: result.project?.projectType ?? body.projectType, missingApiKey: !openAiKey });
 }
 aiRoutes.post('/generate-project', validateBody(aiSchema), (req, res, next) => handle(req, res, 'coder').catch(next));
 aiRoutes.post('/modify-project', validateBody(aiSchema), (req, res, next) => handle(req, res, 'auto').catch(next));
