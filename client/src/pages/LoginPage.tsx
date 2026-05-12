@@ -1,0 +1,10 @@
+import type { FormEvent } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../lib/apiClient';
+
+export function LoginPage() {
+  const [mode, setMode] = useState<'login'|'register'>('login'); const [error, setError] = useState(''); const navigate = useNavigate();
+  async function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const formData = new FormData(event.currentTarget); setError(''); try { const payload = { email: String(formData.get('email')), password: String(formData.get('password')), name: String(formData.get('name') || '') }; mode === 'login' ? await api.login(payload) : await api.register(payload); navigate('/dashboard'); } catch (e) { setError(e instanceof Error ? e.message : 'Auth failed'); } }
+  return <main className="grid min-h-screen place-items-center bg-gradient-to-br from-white to-green-50 p-6"><section className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-xl"><div className="mb-8"><div className="mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-green-600 font-black text-white">AI</div><h1 className="text-3xl font-black">AI App Builder</h1><p className="mt-2 text-slate-600">Sign in to build and save AI-generated apps.</p></div><form onSubmit={submit} className="space-y-4">{mode === 'register' && <input className="input" name="name" placeholder="Name"/>}<input className="input" name="email" type="email" placeholder="Email" required/><input className="input" name="password" type="password" placeholder="Password (8+ chars)" required minLength={8}/>{error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}<button className="btn-primary w-full">{mode === 'login' ? 'Sign in' : 'Create account'}</button></form><button className="mt-5 w-full text-sm font-semibold text-green-700" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>{mode === 'login' ? 'Need an account? Register' : 'Already have an account? Sign in'}</button></section></main>;
+}

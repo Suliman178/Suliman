@@ -1,0 +1,37 @@
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { authRoutes } from './routes/authRoutes.js';
+import { projectRoutes } from './routes/projectRoutes.js';
+import { fileRoutes } from './routes/fileRoutes.js';
+import { aiRoutes } from './routes/aiRoutes.js';
+import { usageRoutes } from './routes/usageRoutes.js';
+import { errorMiddleware } from './middleware/errorMiddleware.js';
+import { sessionMiddleware } from './middleware/authMiddleware.js';
+import { persistenceMode } from './services/storage.js';
+
+const app = express();
+const port = Number(process.env.PORT || 3000);
+const openAiKey = process.env.OPENAI_API_KEY?.trim();
+console.log('OpenAI key configured:', Boolean(openAiKey));
+console.log('OpenAI key prefix valid:', Boolean(openAiKey && (openAiKey.startsWith('sk-') || openAiKey.startsWith('sk-proj-'))));
+app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173', credentials: true }));
+app.use(express.json({ limit: '5mb' }));
+app.use(cookieParser());
+app.use(sessionMiddleware());
+app.get('/api/health', (_req, res) => res.json({ ok: true, database: persistenceMode, openai: Boolean(openAiKey) }));
+app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/projects/:projectId/files', fileRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/usage', usageRoutes);
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const clientDist = path.resolve(process.cwd(), 'dist/client');
+app.use(express.static(clientDist));
+app.get(/.*/, (_req, res, next) => { if (process.env.NODE_ENV === 'production') return res.sendFile(path.join(clientDist, 'index.html')); next(); });
+app.use(errorMiddleware);
+app.listen(port, () => console.log(`AI App Builder API running on http://localhost:${port}`));

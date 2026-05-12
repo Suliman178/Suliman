@@ -1,19 +1,102 @@
-# 🎈 Blank app template 
+# AI App Builder
 
-A simple Streamlit app template for you to modify!
+A full-stack MVP for building and editing AI-generated app projects. It includes email/password authentication, project persistence, a file explorer, Monaco code editor, chat-driven AI generation, static iframe preview, usage tracking, and an extensible AI provider/router architecture.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+## Stack
 
-### How to run it on your own machine
+- Frontend: React, TypeScript, Vite, Tailwind CSS
+- Backend: Node.js, Express, TypeScript
+- Editor: Monaco Editor through `@monaco-editor/react`
+- Persistence: PostgreSQL when `DATABASE_URL` is configured; JSON file fallback at `data/storage.json` for local development
+- Database schema: Drizzle ORM schema for PostgreSQL tables
+- Auth: secure email/password auth with bcrypt hashes and `express-session` HTTP-only session cookies
+- AI: OpenAI provider using `OPENAI_API_KEY`; Anthropic and Gemini provider shells are ready for future implementation
+- Project types: static HTML/CSS/JS, React app files, and full-stack React + Express files
 
-1. Install the requirements
 
-   ```
-   $ pip install -r requirements.txt
-   ```
+## Generation and preview support
 
-2. Run the app
+- Static projects generate `index.html`, `style.css`, and `script.js` and currently run in the live iframe preview.
+- React projects generate real multi-file Vite/React TypeScript project files such as `package.json`, `src/App.tsx`, `src/main.tsx`, components, pages, and styles.
+- Full-stack projects generate frontend React files, backend Express TypeScript routes/services, shared types, and database-ready schema files.
+- React and full-stack generation currently works as saved project files in the file explorer/editor, but the live runner for those project types is intentionally not implemented yet. The preview shows: `React/full-stack preview runner is not implemented yet.` A real sandbox runner is the next phase.
+- If `OPENAI_API_KEY` is missing, the local fallback intentionally remains a simple static HTML/CSS/JS project.
 
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+## Environment secrets
+
+Create a `.env` file or Replit Secrets with:
+
+```bash
+OPENAI_API_KEY=your_openai_key       # required for real AI generation
+DATABASE_URL=postgres://...          # optional; enables PostgreSQL persistence
+SESSION_SECRET=replace-with-long-secret
+CLIENT_ORIGIN=http://localhost:5173  # dev default
+PORT=3000                            # API default
+```
+
+## OpenAI API key setup
+
+ChatGPT Plus or ChatGPT Pro is not the same thing as OpenAI API credit. A ChatGPT subscription lets you use ChatGPT in the ChatGPT product, but this app calls the OpenAI Platform API directly.
+
+For real AI generation, create a real OpenAI Platform API key from the OpenAI Platform API keys page, add billing/API credit if needed, and put the key in `.env` as `OPENAI_API_KEY=...`.
+
+Do not commit `.env`. This repo ignores `.env` and `.env.*` by default, and secrets should stay local or in your deployment secret manager.
+
+After changing `.env`, restart the server with `npm run dev` so `dotenv` can load the updated value.
+
+Optional future provider keys:
+
+```bash
+ANTHROPIC_API_KEY=...
+GEMINI_API_KEY=...
+```
+
+## Run locally
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173`.
+
+For validation and production build:
+
+```bash
+npm run typecheck
+npm run build
+npm start
+```
+
+## Full AI generation test flow
+
+1. Register or sign in.
+2. Create a project from **My Projects** or open `/builder/new`.
+3. In the builder chat, send: `Create a modern habit tracker with daily habits, streak counter, add habit form, delete habit button, and clean green design.`
+4. Confirm generated files appear in the file explorer.
+5. Open `index.html`, `style.css`, or `script.js` and edit code.
+6. Confirm the live preview updates after edits.
+7. Send `Make the design better.`
+8. Refresh the browser and reopen the project from **My Projects** to confirm persistence. With `DATABASE_URL` configured, this persists in PostgreSQL; otherwise it persists in `data/storage.json`.
+
+## API routes
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+- `POST /api/projects`
+- `GET /api/projects`
+- `GET /api/projects/:projectId`
+- `PATCH /api/projects/:projectId`
+- `DELETE /api/projects/:projectId`
+- `GET /api/projects/:projectId/files`
+- `POST /api/projects/:projectId/files`
+- `PATCH /api/projects/:projectId/files`
+- `DELETE /api/projects/:projectId/files`
+- `POST /api/ai/generate-project`
+- `POST /api/ai/modify-project`
+- `POST /api/ai/review-project`
+- `POST /api/ai/fix-project`
+- `POST /api/ai/improve-design`
+- `GET /api/usage`
